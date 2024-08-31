@@ -1,6 +1,9 @@
 #include <cstdint>
 #include <opencv2/opencv.hpp>
 #include <iostream>
+#include <iomanip>
+#include <ctime>
+#include <fstream>
 
 #define MANY_SPOTS 3
 #define OPEN 0
@@ -15,7 +18,7 @@ void emailUpdate(uint16_t* spots) {
   std::ostringstream command;
   command << "echo \"Subject: ";
   ushort openSpots = 0;
-  for(ushort i = 0; i < MANY_SPOTS; ++i) {
+  for (ushort i = 0; i < MANY_SPOTS; ++i) {
     if (spots[i] == 0) {
       openSpots += 1;
     }
@@ -26,18 +29,28 @@ void emailUpdate(uint16_t* spots) {
   }
   // command << "\" | msmtp -t";
   command << "\" | msmtp openspotrpi@gmail.com";
-  std::cout << command.str().c_str() << std::endl;
-  int result = system(command.str().c_str());
-  if (result == -1) {
-    std:cerr << "Failed to email." << std::endl;
+
+  std::time_t t = std::time(nullptr);
+  std::tm tm = *std::localtime(&t);
+  std::cout << command.str().c_str() << " - " << std::put_time(&tm, "%Y-%m-%d %H:%M:%S") << std::endl;
+  // what should have been emailed
+  std::ofstream file("/tmp/tmpopenspot", std::ios::app);
+  if (file.is_open()) {
+    file << command.str().c_str() << " - " << std::put_time(&tm, "%Y-%m-%d %H:%M:%S") << '\n';
+    file.close();
   }
+
+  // int result = system(command.str().c_str());
+  // if (result == -1) {
+  //   std:cerr << "Failed to email." << std::endl;
+  // }
 }
 
 int main(int argc, char** argv) {
   // load the video
-  string videoPath = "../tmp/parking/vfast1.mp4";
-  VideoCapture cap(videoPath);
-  // VideoCapture cap(0);
+  // string videoPath = "../tmp/parking/vfast1.mp4";
+  // VideoCapture cap(videoPath);
+  VideoCapture cap(0);
   if (!cap.isOpened()) {
     cerr << "Failed to open video" << endl;
     return -1;
@@ -47,6 +60,10 @@ int main(int argc, char** argv) {
   Mat frame, gray, blurred, edges;
   CREATE_SPOTS_ARRAY(uint16_t, spots);
   CREATE_SPOTS_ARRAY(bool, flags);
+
+  std::ofstream logfile("/tmp/tmpopenspot");
+  if (logfile.is_open()) logfile.close();
+
   while (true) {
     cap >> frame;
     if (frame.empty()) {
@@ -149,10 +166,10 @@ int main(int argc, char** argv) {
     // imshow("gray", gray);
     // imshow("blurred", blurred);
     // imshow("edges", edges);
-    imshow("main", frame);
+    // imshow("main", frame);
 
     // break the loop on 'q' key press
-    if (waitKey(5000) == 'q') {
+    if (waitKey(125) == 'q') {
         break;
     }
   }
