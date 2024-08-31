@@ -11,6 +11,28 @@ using namespace cv;
 using namespace std;
 typedef unsigned short ushort;
 
+void emailUpdate(uint16_t* spots) { 
+  std::ostringstream command;
+  command << "echo \"Subject: ";
+  ushort openSpots = 0;
+  for(ushort i = 0; i < MANY_SPOTS; ++i) {
+    if (spots[i] == 0) {
+      openSpots += 1;
+    }
+  }
+  command << openSpots << " | ";
+  for (ushort s = 0; s < MANY_SPOTS; ++s) {
+    command << "[" << (spots[s] == 0 ? "   " : "CAR" ) << "]";
+  }
+  // command << "\" | msmtp -t";
+  command << "\" | msmtp openspotrpi@gmail.com";
+  std::cout << command.str().c_str() << std::endl;
+  int result = system(command.str().c_str());
+  if (result == -1) {
+    std:cerr << "Failed to email." << std::endl;
+  }
+}
+
 int main(int argc, char** argv) {
   // load the video
   string videoPath = "../tmp/parking/vfast1.mp4";
@@ -98,22 +120,26 @@ int main(int argc, char** argv) {
       putText(frame, to_string(count), textOrg, FONT_HERSHEY_SIMPLEX, fontScale, Scalar(0, 0, 255), 2);
       // std::cout << "Bits: " << std::bitset<16>(spots[i]) << std::endl;
       if (spots[i] == 0xFFFF && flags[i] != BUSY) {
-        // all bits are on! car detected!
+        // all bits are on: car detected!
         flags[i] = BUSY;
         // std::cout << "spot[" << i << "] = " << std::bitset<16>(spots[i]) << " busy." << std::endl;
-        for (int s = 0; s < MANY_SPOTS; ++s) {
-          std::cout << " [" << (spots[s] == 0 ? "   " : "CAR" ) << "] ";
-        }
-        std::cout << std::endl;
+        emailUpdate(spots);
+
+        // for (int s = 0; s < MANY_SPOTS; ++s) {
+        //   std::cout << " [" << (spots[s] == 0 ? "   " : "CAR" ) << "] ";
+        // }
+        // std::cout << std::endl;
       }
       if (spots[i] == 0 && flags[i] != OPEN) {
-        // isOpenSpot[i] = true;
+        // all bits are off: open spot!
         flags[i] = OPEN;
         // std::cout << "spot[" << i << "] = " << std::bitset<16>(spots[i]) << " open." << std::endl;
-        for (int s = 0; s < MANY_SPOTS; ++s) {
-          std::cout << " [" << (spots[s] == 0 ? "   " : "CAR" ) << "] ";
-        }
-        std::cout << std::endl;
+        emailUpdate(spots);
+
+        // for (int s = 0; s < MANY_SPOTS; ++s) {
+        //   std::cout << " [" << (spots[s] == 0 ? "   " : "CAR" ) << "] ";
+        // }
+        // std::cout << std::endl;
       }
       // putText(frame, "<car|nocar>", textOrg, FONT_HERSHEY_SIMPLEX, fontScale, Scalar(255, 0, 0), 2);
       bitPosition = (bitPosition + 1) % 16;
@@ -126,7 +152,7 @@ int main(int argc, char** argv) {
     imshow("main", frame);
 
     // break the loop on 'q' key press
-    if (waitKey(500) == 'q') {
+    if (waitKey(5000) == 'q') {
         break;
     }
   }
