@@ -3,7 +3,8 @@ CXX = g++
 
 # Compiler flags
 # CXXFLAGS = -std=c++11 `pkg-config --cflags opencv4`
-CXXFLAGS = -std=c++11 -I$(BUILDROOT_OUTPUT_DIR)/host/aarch64-buildroot-linux-gnu/sysroot/usr/include/opencv4/ `pkg-config --cflags opencv4`
+# CXXFLAGS = -std=c++11 -I$(BUILDROOT_OUTPUT_DIR)/host/aarch64-buildroot-linux-gnu/sysroot/usr/include/opencv4/ `pkg-config --cflags opencv4`
+CXXFLAGS = -std=c++11 -I$(BUILDROOT_OUTPUT_DIR)/host/aarch64-buildroot-linux-gnu/sysroot/usr/include/opencv4/
 
 # Linker flags
 LDFLAGS = `pkg-config --libs opencv4`
