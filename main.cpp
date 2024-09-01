@@ -53,9 +53,9 @@ void emailUpdate(uint16_t* spots) {
 
 int main(int argc, char** argv) {
   // load the video
-  // string videoPath = "../tmp/parking/vfast1.mp4";
-  // VideoCapture cap(videoPath);
-  VideoCapture cap(0);
+  string videoPath = "../tmp/parking/vfast1.mp4";
+  VideoCapture cap(videoPath);
+  // VideoCapture cap(0);
   if (!cap.isOpened()) {
     cerr << "Failed to open video" << endl;
     return -1;
@@ -97,7 +97,7 @@ int main(int argc, char** argv) {
     }
 
     // contour detection
-    vector<vector<Point>> contours;
+    vector< vector<Point> > contours;
     // findContours(edges, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
     findContours(edges, contours, RETR_TREE, CHAIN_APPROX_SIMPLE);
 
@@ -171,16 +171,16 @@ int main(int argc, char** argv) {
     // imshow("gray", gray);
     // imshow("blurred", blurred);
     // imshow("edges", edges);
-    // imshow("main", frame);
+    imshow("main", frame);
 
     // break the loop on 'q' key press
-    // if (waitKey(125) == 'q') {
-    //     break;
-    // }
+    if (waitKey(125) == 'q') {
+        break;
+    }
   }
 
   cap.release();
-  // destroyAllWindows();
+  destroyAllWindows();
 
   return 0;
 }
