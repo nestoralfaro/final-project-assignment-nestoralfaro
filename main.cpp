@@ -5,6 +5,11 @@
 #include <fstream>
 #include <opencv2/opencv.hpp>
 
+// #include <opencv2/core.hpp>
+// #include <opencv2/highgui.hpp>
+// #include <opencv2/imgproc.hpp>
+// #include <opencv2/imgcodecs.hpp>
+
 #define MANY_SPOTS 3
 #define OPEN 0
 #define BUSY 1
