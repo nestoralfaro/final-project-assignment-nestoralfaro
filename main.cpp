@@ -1,9 +1,9 @@
 #include <cstdint>
-#include <opencv2/opencv.hpp>
 #include <iostream>
 #include <iomanip>
 #include <ctime>
 #include <fstream>
+#include <opencv2/opencv.hpp>
 
 #define MANY_SPOTS 3
 #define OPEN 0
