@@ -174,13 +174,13 @@ int main(int argc, char** argv) {
     // imshow("main", frame);
 
     // break the loop on 'q' key press
-    if (waitKey(125) == 'q') {
-        break;
-    }
+    // if (waitKey(125) == 'q') {
+    //     break;
+    // }
   }
 
   cap.release();
-  destroyAllWindows();
+  // destroyAllWindows();
 
   return 0;
 }
