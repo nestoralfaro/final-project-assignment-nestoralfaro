@@ -11,6 +11,7 @@ CXXFLAGS += `$(BUILDROOT_OUTPUT_DIR)/host/bin/pkg-config --cflags opencv4`
 
 # Linker flags
 LDFLAGS = `$(BUILDROOT_OUTPUT_DIR)/host/bin/pkg-config --libs opencv4`
+LDFLAGS += -lstdc++
 
 # Target executable
 TARGET = parking_spot_detector
