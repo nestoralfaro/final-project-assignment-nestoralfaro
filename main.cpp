@@ -1,14 +1,23 @@
-#include <cstdint>
+// #include <cstdint>
 #include <iostream>
-#include <iomanip>
-#include <ctime>
-#include <fstream>
+// #include <iomanip>
+// #include <ctime>
+// #include <fstream>
 #include <opencv2/opencv.hpp>
 
 // #include <opencv2/core.hpp>
 // #include <opencv2/highgui.hpp>
 // #include <opencv2/imgproc.hpp>
 // #include <opencv2/imgcodecs.hpp>
+
+int main() {
+  std::cout << cv::getBuildInformation() << std::endl;
+  return 0;
+}
+
+
+
+/*
 
 #define MANY_SPOTS 3
 #define OPEN 0
@@ -184,3 +193,7 @@ int main(int argc, char** argv) {
 
   return 0;
 }
+
+
+
+*/
