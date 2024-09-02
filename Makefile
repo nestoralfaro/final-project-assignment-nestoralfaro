@@ -8,10 +8,8 @@ ifeq ($(STAGING_DIR),)
 	LDFLAGS=`pkg-config --libs opencv4`
 else
 	CFLAGS=-I$(STAGING_DIR)/include/opencv4/
-	$(info CFLAGS=$(CFLAGS))
 	# -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_videoio
 	LDFLAGS=-L$(STAGING_DIR)/lib/ $(LOPTS)
-	$(info LDFLAGS=$(LDFLAGS))
 endif
 
 TARGET=openspot
