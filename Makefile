@@ -1,7 +1,7 @@
 # cross-compilation (opencv4 cross-compiled from source found in host)
 # source: https://learnopencv.com/build-and-install-opencv-4-for-raspberry-pi/
 CC=$(TARGET_CROSS)g++
-ifeq($(STAGING_DIR),)
+ifeq ($(STAGING_DIR),)
 	# native compilation
 	CC=g++
 	CFLAGS=-std=c++11 `pkg-config --cflags opencv4`
@@ -17,9 +17,9 @@ endif
 TARGET=openspot
 SRCS=main.cpp
 
-all: $(TARGET)
+all:	$(TARGET)
 
-$(TARGET): $(SRCS)
+$(TARGET):	$(SRCS)
 	$(CC) -o $@ $(SRCS) $(CFLAGS) $(LDFLAGS)
 
 clean:
