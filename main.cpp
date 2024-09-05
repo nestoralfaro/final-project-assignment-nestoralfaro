@@ -1,23 +1,14 @@
-// #include <cstdint>
+#include <cstdint>
 #include <iostream>
-// #include <iomanip>
-// #include <ctime>
-// #include <fstream>
-#include <opencv2/opencv.hpp>
+#include <iomanip>
+#include <ctime>
+#include <fstream>
 
+#include <opencv2/opencv.hpp>
 // #include <opencv2/core.hpp>
 // #include <opencv2/highgui.hpp>
 // #include <opencv2/imgproc.hpp>
 // #include <opencv2/imgcodecs.hpp>
-
-int main() {
-  std::cout << cv::getBuildInformation() << std::endl;
-  return 0;
-}
-
-
-
-/*
 
 #define MANY_SPOTS 3
 #define OPEN 0
@@ -61,8 +52,12 @@ void emailUpdate(uint16_t* spots) {
 }
 
 int main(int argc, char** argv) {
+  if (argc < 2) {
+    std::cerr << "Usage: " << argv[0] << " <path_to_file>" << std::endl;
+    return 1;
+  }
   // load the video
-  string videoPath = "../tmp/parking/vfast1.mp4";
+  string videoPath = argv[1];
   VideoCapture cap(videoPath);
   // VideoCapture cap(0);
   if (!cap.isOpened()) {
@@ -180,20 +175,16 @@ int main(int argc, char** argv) {
     // imshow("gray", gray);
     // imshow("blurred", blurred);
     // imshow("edges", edges);
-    imshow("main", frame);
+    // imshow("main", frame);
 
     // break the loop on 'q' key press
-    if (waitKey(125) == 'q') {
-        break;
-    }
+    // if (waitKey(125) == 'q') {
+    //     break;
+    // }
   }
 
   cap.release();
-  destroyAllWindows();
+  // destroyAllWindows();
 
   return 0;
 }
-
-
-
-*/

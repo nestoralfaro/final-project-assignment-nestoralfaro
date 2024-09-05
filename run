@@ -1,4 +1,4 @@
 #!/bin/zsh
 make clean
 make all
-./openspot
+./openspot ../tmp/parking/vfast1.mp4

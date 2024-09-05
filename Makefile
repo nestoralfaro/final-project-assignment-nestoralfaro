@@ -1,25 +1,35 @@
-# cross-compilation (opencv4 cross-compiled from source found in host)
-# source: https://learnopencv.com/build-and-install-opencv-4-for-raspberry-pi/
-CC=$(TARGET_CROSS)g++
-ifeq ($(STAGING_DIR),)
-	# native compilation
-	CFLAGS=-std=c++11 `pkg-config --cflags opencv4`
-	LDFLAGS=`pkg-config --libs opencv4`
-else
-	# CFLAGS=-I$(STAGING_DIR)/usr/include/opencv4/
-	# -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_videoio
-	# LDFLAGS=-L$(STAGING_DIR)/usr/lib/ $(LOPTS)
-endif
+# Compiler
+CXX = g++
 
-TARGET=openspot
-SRCS=main.cpp
+# Compiler flags
+CXXFLAGS = -std=c++11 `pkg-config --cflags opencv4`
 
-all:	$(TARGET)
+# Linker flags
+LDFLAGS = `pkg-config --libs opencv4`
 
-$(TARGET):	$(SRCS)
-	$(CC) -o $@ $(SRCS) $(CFLAGS) $(LDFLAGS)
+# Target executable
+TARGET = openspot
 
+# Source files
+SRCS = main.cpp
+
+# Object files
+OBJS = $(SRCS:.cpp=.o)
+
+# Default target
+all: $(TARGET)
+
+# Build the target executable
+$(TARGET): $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+
+# Build the object files
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Clean the build
 clean:
-	rm -f $(TARGET)
+	rm -f $(TARGET) $(OBJS)
 
-.PHONY: all clean install
+# Phony targets
+.PHONY: all clean
