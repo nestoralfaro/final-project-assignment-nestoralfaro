@@ -1,3 +1,4 @@
+#include <chrono>
 #include <csignal>
 #include <ctime>
 #include <cstring>
@@ -24,7 +25,7 @@
 
 volatile sig_atomic_t terminateFlag = 0, isMailer = 0;
 typedef unsigned short ushort;
-int secondsPerFrame = 3;
+int msPerFrame = 1;
 void emailUpdate(uint16_t* spots);
 void daemonize();
 void handleSignal(int signal);
@@ -32,16 +33,38 @@ void handleSignal(int signal);
 int main(int argc, char** argv) {
   openlog("openspot", LOG_CONS | LOG_PID | LOG_NDELAY | LOG_PERROR, LOG_LOCAL1);
   if (argc < 2) {
-    std::string usageMessage = "Usage: " + std::string(argv[0]) + " <path_to_file|-d|-m|--spf N>";
+    std::string usageMessage = "Usage: " + std::string(argv[0]) + "[--video path_to_mp4] | [--mpf milliseconds_per_frame] | [-c] | [-d] | [-m]";
     syslog(LOG_ERR, "%s", usageMessage.c_str());
-    return 1;
+    closelog();
+    return -1;
   }
   cv::VideoCapture cap;
   for (int i = 1; i < argc; ++i) {
     std::string curarg = argv[i];
-    if (curarg == "-d") {
-      syslog(LOG_INFO, "%s", "Daemonizing openspot.");
-      std::cout << "Daemonizing openspot." << std::endl;
+    if (curarg == "--video" && i + 1 < argc) {
+      std::string videoPath = argv[i + 1];
+      if (videoPath.find(".mp4") != std::string::npos) {
+        // load the video
+        std::string loadingTestVideoMessage = "Source set to video " + videoPath;
+        syslog(LOG_INFO, "%s", loadingTestVideoMessage.c_str());
+        std::cout <<  "Source set to video " << videoPath << std::endl;
+        cap.open(videoPath);
+      }
+    }
+    else if (curarg == "--mpf" && i + 1 < argc) {
+      msPerFrame = std::atoi(argv[i + 1]);
+      std::string msPerFrameMessage = "Milliseconds per new frame read set to " + std::to_string(msPerFrame);
+      syslog(LOG_INFO, "%s", msPerFrameMessage.c_str());
+      std::cout << "Milliseconds per new frame read set to " << msPerFrameMessage << std::endl;
+    }
+    else if (curarg == "-c") {
+      syslog(LOG_INFO, "%s", "Source set to camera.");
+      std::cout << "Source set to camera." << std::endl;
+      cap.open(0);
+    }
+    else if (curarg == "-d") {
+      syslog(LOG_INFO, "%s", "Starting openspot daemon.");
+      std::cout << "Starting openspot daemon." << std::endl;
       cap.open(0);
       std::signal(SIGTERM, handleSignal);
       daemonize();
@@ -51,19 +74,12 @@ int main(int argc, char** argv) {
       syslog(LOG_INFO, "%s", "Email notifications enabled.");
       std::cout << "Email notifications enabled." << std::endl;
     }
-    else if (curarg == "--spf" && i + 1 < argc) {
-      secondsPerFrame = std::atoi(argv[i + 1]);
-    }
-    else if (curarg.find(".mp4") != std::string::npos) {
-      // load the video
-      std::string loadingTestVideoMessage = "Loading testing video " + curarg;
-      syslog(LOG_INFO, "%s", loadingTestVideoMessage.c_str());
-      std::cout <<  "Loading testing video " << curarg << std::endl;
-      cap.open(curarg);
-    }
   }
   if (!cap.isOpened()) {
     syslog(LOG_ERR, "%s", "Failed to open video");
+    std::string usageMessage = "Usage: " + std::string(argv[0]) + "[--video path_to_mp4] | [--mpf milliseconds_per_frame] | [-c] | [-d] | [-m]";
+    syslog(LOG_ERR, "%s", usageMessage.c_str());
+    closelog();
     return -1;
   }
 
@@ -186,7 +202,7 @@ int main(int argc, char** argv) {
     //     break;
     // }
 
-    std::this_thread::sleep_for(std::chrono::seconds(secondsPerFrame));
+    std::this_thread::sleep_for(std::chrono::milliseconds(msPerFrame));
   }
 
   cap.release();

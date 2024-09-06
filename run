@@ -1,6 +1,7 @@
 #!/bin/zsh
 make clean
 make all
-./openspot ../tmp/parking/vfast1.mp4 -m --spf 5
+./openspot -c --mpf 500
+# ./openspot ../tmp/parking/vfast1.mp4 -m --spf 5
 # ./openspot ../tmp/parking/vfast1.mp4 -m
 # ./openspot -d
