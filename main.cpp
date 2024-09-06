@@ -2,9 +2,11 @@
 #include <ctime>
 #include <cstring>
 #include <cstdint>
+#include <cstdlib>
 #include <iostream>
 #include <iomanip>
 #include <fcntl.h>
+#include <string>
 #include <thread>
 #include <unistd.h>
 #include <sys/types.h>
@@ -20,35 +22,50 @@
 #define BUSY 1
 #define CREATE_SPOTS_ARRAY(type, name) type name[MANY_SPOTS]
 
-volatile sig_atomic_t terminateFlag = 0;
+volatile sig_atomic_t terminateFlag = 0, isMailer = 0;
 typedef unsigned short ushort;
+int secondsPerFrame = 3;
 void emailUpdate(uint16_t* spots);
 void daemonize();
 void handleSignal(int signal);
 
 int main(int argc, char** argv) {
+  openlog("openspot", LOG_CONS | LOG_PID | LOG_NDELAY | LOG_PERROR, LOG_LOCAL1);
   if (argc < 2) {
-    std::cerr << "Usage: " << argv[0] << "<path_to_file|-d>" << std::endl;
+    std::string usageMessage = "Usage: " + std::string(argv[0]) + " <path_to_file|-d|-m|--spf N>";
+    syslog(LOG_ERR, "%s", usageMessage.c_str());
     return 1;
   }
   cv::VideoCapture cap;
-  if (std::strcmp(argv[1], "-d") == 0) {
-    std::cout << "Daemonizing openspot." << std::endl;
-    cap.open(0);
-    std::signal(SIGTERM, handleSignal);
-    daemonize();
-  }
-  else {
-    // load the video
-    std::string videoPath = argv[1];
-    std::cout << "Loading video " << videoPath << std::endl;
-    cap.open(videoPath);
+  for (int i = 1; i < argc; ++i) {
+    std::string curarg = argv[i];
+    if (curarg == "-d") {
+      syslog(LOG_INFO, "%s", "Daemonizing openspot.");
+      std::cout << "Daemonizing openspot." << std::endl;
+      cap.open(0);
+      std::signal(SIGTERM, handleSignal);
+      daemonize();
+    }
+    else if (curarg == "-m") {
+      isMailer = 1;
+      syslog(LOG_INFO, "%s", "Email notifications enabled.");
+      std::cout << "Email notifications enabled." << std::endl;
+    }
+    else if (curarg == "--spf" && i + 1 < argc) {
+      secondsPerFrame = std::atoi(argv[i + 1]);
+    }
+    else if (curarg.find(".mp4") != std::string::npos) {
+      // load the video
+      std::string loadingTestVideoMessage = "Loading testing video " + curarg;
+      syslog(LOG_INFO, "%s", loadingTestVideoMessage.c_str());
+      std::cout <<  "Loading testing video " << curarg << std::endl;
+      cap.open(curarg);
+    }
   }
   if (!cap.isOpened()) {
-    std::cerr << "Failed to open video" << std::endl;
+    syslog(LOG_ERR, "%s", "Failed to open video");
     return -1;
   }
-  openlog("openspot", LOG_CONS | LOG_PID | LOG_NDELAY | LOG_PERROR, LOG_LOCAL1);
 
   uint16_t bitPosition;
   cv::Mat frame, gray, blurred, edges;
@@ -61,7 +78,7 @@ int main(int argc, char** argv) {
   while (!terminateFlag) {
     cap >> frame;
     if (frame.empty()) {
-      syslog(LOG_ERR, "Frame is empty. Quitting now.");
+      syslog(LOG_ERR, "%s", "Frame is empty. Quitting now.");
       // std::cout << "End of video, looping..." << std::endl;
       // cap.set(cv::CAP_PROP_POS_FRAMES, 0);
       break;
@@ -169,7 +186,7 @@ int main(int argc, char** argv) {
     //     break;
     // }
 
-    // std::this_thread::sleep_for(std::chrono::seconds(3));
+    std::this_thread::sleep_for(std::chrono::seconds(secondsPerFrame));
   }
 
   cap.release();
@@ -181,7 +198,7 @@ int main(int argc, char** argv) {
 void handleSignal(int signal) {
   if (signal == SIGTERM) {
     std::cout << "Received SIGTERM, cleaning up..." << std::endl;
-    syslog(LOG_INFO, "Received SIGTERM, cleaning up...");
+    syslog(LOG_INFO, "%s", "Received SIGTERM, cleaning up...");
     closelog();
     terminateFlag = 1;
   }
@@ -202,7 +219,7 @@ void emailUpdate(uint16_t* spots) {
   }
   // command << "\" | msmtp -t";
   command << "\" | msmtp openspotrpi@gmail.com";
-  syslog(LOG_INFO, command.str().c_str());
+  syslog(LOG_INFO, "%s", command.str().c_str());
 
   std::time_t t = std::time(nullptr);
   std::tm tm = *std::localtime(&t);
@@ -215,10 +232,12 @@ void emailUpdate(uint16_t* spots) {
   // }
 
   /* executing msmtp itself */
-  // int result = system(command.str().c_str());
-  // if (result == -1) {
-  //   std:cerr << "Failed to email." << std::endl;
-  // }
+  if (isMailer) {
+    int result = system(command.str().c_str());
+    if (result == -1) {
+      syslog(LOG_ERR, "%s", "Failed to email.");
+    }
+  }
 }
 
 void daemonize() {
