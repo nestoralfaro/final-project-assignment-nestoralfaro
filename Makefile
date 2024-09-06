@@ -2,10 +2,12 @@
 CXX = g++
 
 # Compiler flags
-CXXFLAGS = -std=c++11 `pkg-config --cflags opencv4`
+# CXXFLAGS = -std=c++11 `pkg-config --cflags opencv4`
+CXXFLAGS = -std=c++11 -I/opt/homebrew/include/opencv4/
 
 # Linker flags
-LDFLAGS = `pkg-config --libs opencv4`
+# LDFLAGS = `pkg-config --libs opencv4`
+LDFLAGS = -L/opt/homebrew/lib/ -lopencv_core -lopencv_imgproc -lopencv_videoio
 
 # Target executable
 TARGET = openspot

@@ -2,3 +2,4 @@
 make clean
 make all
 ./openspot ../tmp/parking/vfast1.mp4
+# ./openspot -d
