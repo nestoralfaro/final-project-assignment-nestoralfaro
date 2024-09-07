@@ -25,7 +25,7 @@
 
 volatile sig_atomic_t terminateFlag = 0, isMailer = 0;
 typedef unsigned short ushort;
-int msPerFrame = 1;
+int msPerFrame = -1;
 void emailUpdate(uint16_t* spots);
 void daemonize();
 void handleSignal(int signal);
@@ -202,7 +202,10 @@ int main(int argc, char** argv) {
     //     break;
     // }
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(msPerFrame));
+    if (msPerFrame > 0) {
+      /* this may break if setup to run on startup, so beware */
+      std::this_thread::sleep_for(std::chrono::milliseconds(msPerFrame));
+    }
   }
 
   cap.release();
