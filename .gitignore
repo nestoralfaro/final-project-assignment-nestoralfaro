@@ -31,4 +31,7 @@
 *.out
 *.app
 
+# Random
+.DS_Store
+
 # End of https://mrkandreev.name/snippets/gitignore-generator/#C++
